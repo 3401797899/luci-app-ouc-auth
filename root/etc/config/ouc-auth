@@ -1,0 +1,5 @@
+
+config ouc-auth
+	option username ''
+    option password ''
+	option enabled '0'

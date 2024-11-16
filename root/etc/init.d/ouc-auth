@@ -1,0 +1,31 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+
+enable=$(uci get ouc-auth.@ouc-auth[0].enabled)
+username=$(uci get ouc-auth.@ouc-auth[0].username)
+password=$(uci get ouc-auth.@ouc-auth[0].password)
+
+start() {
+    [ $enable = "0" ] && exit 0
+    if ! grep -q "xha.ouc.edu.cn" /etc/hosts; then
+        echo "192.168.101.201 xha.ouc.edu.cn" >> /etc/hosts
+    fi
+    curl "https://xha.ouc.edu.cn:802/eportal/portal/login?callback=dr1003&login_method=1&user_account=${username}&user_password=${password}&wlan_user_ip=0.0.0.0&wlan_user_ipv6=&wlan_user_mac=000000000000&wlan_ac_ip=&wlan_ac_name=&jsVersion=4.1&terminal_type=1&lang=zh-cn&v=2425&lang=zh"
+    cat << EOF > /usr/bin/ouc-auth.sh
+#!/bin/bash
+response_code=\$(curl -s -o /dev/null -w "%{http_code}" http://connect.rom.miui.com/generate_204)
+if [ \$response_code -ne 204 ]; then
+    curl "https://xha.ouc.edu.cn:802/eportal/portal/login?callback=dr1003&login_method=1&user_account=${username}&user_password=${password}&wlan_user_ip=0.0.0.0&wlan_user_ipv6=&wlan_user_mac=000000000000&wlan_ac_ip=&wlan_ac_name=&jsVersion=4.1&terminal_type=1&lang=zh-cn&v=2425&lang=zh"
+fi
+EOF
+    chmod +x /usr/bin/ouc-auth.sh
+    echo "* * * * * sh /usr/bin/ouc-auth.sh" >> /etc/crontabs/root
+    /etc/init.d/cron restart
+}
+
+stop() {
+	sed -i '/ouc-auth.sh/d' /etc/crontabs/root
+    [-e "/usr/bin/ouc-auth.sh"] && rm /usr/bin/ouc-auth.sh
+}
