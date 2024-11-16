@@ -12,7 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: copy files
         run: |
@@ -25,10 +28,20 @@ jobs:
           cd compiler
           tar -czvf data.tar.gz usr/ etc/
       
+      - name: Get the latest tag
+        id: tag
+        run: |
+          latest_tag=$(git describe --tags $(git rev-list --tags -n 1))
+          tag_version=$(echo "$latest_tag" | sed 's/v\([0-9\.]*\)-\([0-9]*\)/\1 \2/')
+          IFS=' ' read -r version_number increment <<< "$tag_version"
+          incremented_increment=$((increment+1))
+          new_tag="v${version_number}-${incremented_increment}"
+          echo "::set-output name=new_tag::$new_tag"
+
       - name: tar ipk
         run: |
           cd compiler
-          tar -czvf luci-app-ouc-auth_v1.0-1_all.ipk control.tar.gz data.tar.gz debian-binary
+          tar -czvf luci-app-ouc-auth_${{ steps.tag.outputs.new_tag }}_all.ipk control.tar.gz data.tar.gz debian-binary
 
       - name: Create Release
         id: create_release
@@ -36,8 +49,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v1.0-1
-          release_name: v1.0-1
+          tag_name: ${{ steps.tag.outputs.new_tag }}
+          release_name: ${{ steps.tag.outputs.new_tag }}
           draft: false
           prerelease: false
 
@@ -47,6 +60,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./compiler/luci-app-ouc-auth_v1.0-1_all.ipk
-          asset_name: luci-app-ouc-auth_v1.0-1_all.ipk
+          asset_path: ./compiler/luci-app-ouc-auth_${{ steps.tag.outputs.new_tag }}_all.ipk
+          asset_name: luci-app-ouc-auth_${{ steps.tag.outputs.new_tag }}_all.ipk
           asset_content_type: application/ipk
