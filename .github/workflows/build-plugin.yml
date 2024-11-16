@@ -1,0 +1,48 @@
+name: Simple Plugin Compiler
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  
+jobs:
+  build-ipk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: copy files
+        run: |
+          cp -r root/etc compiler/
+          cp -r luasrc/* compiler/usr/lib/lua/luci/
+      
+      - name: tar data.tar.gz
+        run: |
+          cd compiler
+          tar -czvf data.tar.gz usr/ etc/
+      
+      - name: tar ipk
+        run: |
+          cd compiler
+          tar -cvf luci-app-ouc-auth_v1.0-1_all.ipk control.tar.gz data.tar.gz debian-binary
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0-1
+          release_name: v1.0-1
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./luci-app-ouc-auth_v1.0-1_all.ipk
+          asset_name: luci-app-ouc-auth_v1.0-1_all.ipk
+          asset_content_type: application/ipk
