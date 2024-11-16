@@ -16,6 +16,7 @@ jobs:
 
       - name: copy files
         run: |
+          mkdir -p compiler/usr/lib/lua/luci/
           cp -r root/etc compiler/
           cp -r luasrc/* compiler/usr/lib/lua/luci/
       
