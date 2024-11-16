@@ -21,7 +21,9 @@ if [ \$response_code -ne 204 ]; then
 fi
 EOF
     chmod +x /usr/bin/ouc-auth.sh
-    echo "* * * * * sh /usr/bin/ouc-auth.sh" >> /etc/crontabs/root
+    if ! grep -q "sh /usr/bin/ouc-auth.sh" /etc/crontabs/root; then
+        echo "* * * * * sh /usr/bin/ouc-auth.sh" >> /etc/crontabs/root
+    fi
     /etc/init.d/cron restart
 }
 
