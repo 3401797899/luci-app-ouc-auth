@@ -28,7 +28,7 @@ jobs:
       - name: tar ipk
         run: |
           cd compiler
-          tar -cvf luci-app-ouc-auth_v1.0-1_all.ipk control.tar.gz data.tar.gz debian-binary
+          tar -czvf luci-app-ouc-auth_v1.0-1_all.ipk control.tar.gz data.tar.gz debian-binary
 
       - name: Create Release
         id: create_release
