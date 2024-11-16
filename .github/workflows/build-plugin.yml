@@ -47,6 +47,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./luci-app-ouc-auth_v1.0-1_all.ipk
+          asset_path: ./compiler/luci-app-ouc-auth_v1.0-1_all.ipk
           asset_name: luci-app-ouc-auth_v1.0-1_all.ipk
           asset_content_type: application/ipk
