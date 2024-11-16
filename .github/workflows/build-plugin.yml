@@ -31,11 +31,7 @@ jobs:
       - name: Get the latest tag
         id: tag
         run: |
-          latest_tag=$(git describe --tags $(git rev-list --tags -n 1))
-          tag_version=$(echo "$latest_tag" | sed 's/v\([0-9\.]*\)-\([0-9]*\)/\1 \2/')
-          IFS=' ' read -r version_number increment <<< "$tag_version"
-          incremented_increment=$((increment+1))
-          new_tag="v${version_number}-${incremented_increment}"
+          new_tag=$(date +%Y%m%d%H%M%S)
           echo "::set-output name=new_tag::$new_tag"
 
       - name: tar ipk
